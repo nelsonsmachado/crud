@@ -32,6 +32,17 @@ public class PessoaService {
         return pessoaRepository.findById(id);
     }
 
+    public Pessoa modificaPessoa(Pessoa pessoa) {
+        Optional<Pessoa> pessoaOptional = pessoaRepository.findById(pessoa.getId());
+        if (pessoaOptional.isPresent()) {
+            Pessoa pessoaSalva = pessoaOptional.get();
+            pessoaSalva.setNome(pessoa.getNome());
+            pessoaSalva.setNascimento(pessoa.getNascimento());
+            pessoaSalva.setCpf(pessoa.getCpf());
+        }
+            return pessoaRepository.save(pessoa);
+        }
+
     public void excluePessoa(Long id) {
         Pessoa pessoa = pessoaRepository.findById(id)
                 .orElseThrow(() -> new UsuarioNaoEncontradoException(id));

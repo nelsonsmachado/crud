@@ -1,5 +1,6 @@
 package com.dbserver.crud.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -23,7 +24,8 @@ public class Endereco {
     private String cidade;
     private String estado;
     private String cep;
-    
+
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "pessoa_id")
     private Pessoa pessoa;

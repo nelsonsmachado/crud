@@ -47,6 +47,13 @@ public class PessoaController {
                 .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<Pessoa> modificaPessoa(@PathVariable Long id, @RequestBody Pessoa pessoa) {
+        pessoa.setId(id);
+        Pessoa pessoaModificada = pessoaService.modificaPessoa(pessoa);
+        return new ResponseEntity<>(pessoaModificada, HttpStatus.OK);
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> excluePessoa(@PathVariable Long id) {
         try {

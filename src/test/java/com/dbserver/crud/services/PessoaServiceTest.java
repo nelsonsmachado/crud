@@ -1,5 +1,6 @@
 package com.dbserver.crud.services;
 import com.dbserver.crud.entities.Pessoa;
+import com.dbserver.crud.exceptions.UsuarioNaoEncontradoException;
 import com.dbserver.crud.repositories.PessoaRepository;
 
 import com.dbserver.crud.exceptions.CpfExistenteException;
@@ -12,7 +13,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
+import static java.util.Optional.empty;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -27,12 +32,16 @@ public class PessoaServiceTest {
 
     private Pessoa novaPessoa;
     private LocalDate nascimento;
+    private List<Pessoa> pessoas;
 
     @BeforeEach
     public void setUp() {
         // Configuração comum para todos os testes
         nascimento = LocalDate.of(1968, 10, 4);
         novaPessoa = new Pessoa("Nelson Machado", "000.111.222-33", nascimento);
+        novaPessoa.setId(1L);
+        pessoas = new ArrayList<>();
+        pessoas.add(novaPessoa);
     }
 
     @Test
@@ -58,13 +67,82 @@ public class PessoaServiceTest {
     @Test
     @DisplayName("Deve lançar a mensagem de exceção após verificar a existencia de Cpf no cadastro")
     public void naoAdicionaPessoaComCpfExistente() {
-        Pessoa pessoaExistente = new Pessoa("Nelson Machado", "000.111.222-33", nascimento);
 
-        when(pessoaRepository.existsByCpf(pessoaExistente.getCpf())).thenReturn(true); // Já existe pessoa com este CPF
+        when(pessoaRepository.existsByCpf(novaPessoa.getCpf())).thenReturn(true); // Já existe pessoa com este CPF
 
-        assertThrows(CpfExistenteException.class, () -> pessoaService.adicionaPessoa(pessoaExistente));
+        assertThrows(CpfExistenteException.class, () -> pessoaService.adicionaPessoa(novaPessoa));
         // Verifica se o método save não foi chamado quando tentamos adicionar uma pessoa com CPF existente
         verify(pessoaRepository, never()).save(any(Pessoa.class));
+    }
+
+    @Test
+    @DisplayName("Deve exibir uma lista de pessoas")
+    public void exibePessoas(){
+
+        when(pessoaRepository.findAll()).thenReturn(pessoas);
+
+        List<Pessoa> resultadoPessoas = pessoaService.exibePessoas();
+
+        assertEquals(pessoas, resultadoPessoas);
+        verify(pessoaRepository, times(1)).findAll();
+
+    }
+
+    @Test
+    @DisplayName("Deve exibir uma pessoa quando chamada por seu ID com sucesso")
+    public void exibePessoaPorId(){
+
+        when(pessoaRepository.findById(novaPessoa.getId())).thenReturn(Optional.of(novaPessoa));
+
+        Optional<Pessoa> pessoaPorId = pessoaService.exibePessoaPorId(novaPessoa.getId());
+
+        assertEquals(novaPessoa, pessoaPorId.get());
+        verify(pessoaRepository, times(1)).findById(novaPessoa.getId());
+
+    }
+    @Test
+    @DisplayName("Deve modificar as informações de pessoa no cadastro com sucesso")
+    public void modificaPessoa(){
+
+        Pessoa pessoaModificada = new Pessoa("Ana Raquel", "555.666.777-88", nascimento);
+
+        when(pessoaRepository.findById(novaPessoa.getId())).thenReturn(Optional.of(novaPessoa));
+        when(pessoaRepository.save(pessoaModificada)).thenReturn(pessoaModificada);
+
+        Pessoa modificaPessoa = pessoaService.modificaPessoa(pessoaModificada);
+
+        assertEquals(novaPessoa.getNome(), modificaPessoa.getNome());
+        assertEquals(novaPessoa.getCpf(), modificaPessoa.getCpf());
+        assertEquals(novaPessoa.getNascimento(), modificaPessoa.getNascimento());
+
+        verify(pessoaRepository, times(1)).findById(novaPessoa.getId());
+        verify(pessoaRepository, times(1)).save(pessoaModificada);
+
+    }
+
+    @Test
+    @DisplayName("Deve excluir uma pessoa do cadastro com sucesso")
+    public void excluePessoa(){
+
+        when(pessoaRepository.findById(novaPessoa.getId())).thenReturn(Optional.empty());
+
+        assertDoesNotThrow(() -> pessoaService.excluePessoa(novaPessoa.getId()));
+
+        verify(pessoaRepository, times(1)).findById(novaPessoa.getId());
+        verify(pessoaRepository, times(1)).delete(novaPessoa);
+    }
+
+    @Test
+    @DisplayName("Deve ocorre um erro havendo exceção")
+    public void naoExcluePessoa(){
+
+        when(pessoaRepository.findById(novaPessoa.getId())).thenReturn(Optional.empty());
+
+        assertThrows(UsuarioNaoEncontradoException.class, () -> pessoaService.excluePessoa(novaPessoa.getId()));
+
+        verify(pessoaRepository, times(1)).findById(novaPessoa.getId());
+        verify(pessoaRepository, never()).delete(novaPessoa);
+
     }
 }
 

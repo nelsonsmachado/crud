@@ -100,40 +100,43 @@ public class PessoaServiceTest {
         verify(pessoaRepository, times(1)).findById(novaPessoa.getId());
 
     }
+
     @Test
     @DisplayName("Deve modificar as informações de pessoa no cadastro com sucesso")
-    public void modificaPessoa(){
-
+    public void modificaPessoa() {
         Pessoa pessoaModificada = new Pessoa("Ana Raquel", "555.666.777-88", nascimento);
+        pessoaModificada.setId(novaPessoa.getId()); // Certifique-se de que a ID seja a mesma
 
         when(pessoaRepository.findById(novaPessoa.getId())).thenReturn(Optional.of(novaPessoa));
-        when(pessoaRepository.save(pessoaModificada)).thenReturn(pessoaModificada);
+        when(pessoaRepository.save(any(Pessoa.class))).thenReturn(pessoaModificada);
 
         Pessoa modificaPessoa = pessoaService.modificaPessoa(pessoaModificada);
 
-        assertEquals(novaPessoa.getNome(), modificaPessoa.getNome());
-        assertEquals(novaPessoa.getCpf(), modificaPessoa.getCpf());
-        assertEquals(novaPessoa.getNascimento(), modificaPessoa.getNascimento());
+        assertEquals(pessoaModificada.getNome(), modificaPessoa.getNome());
+        assertEquals(pessoaModificada.getCpf(), modificaPessoa.getCpf());
+        assertEquals(pessoaModificada.getNascimento(), modificaPessoa.getNascimento());
 
         verify(pessoaRepository, times(1)).findById(novaPessoa.getId());
-        verify(pessoaRepository, times(1)).save(pessoaModificada);
-
+        verify(pessoaRepository, times(1)).save(novaPessoa);
     }
 
     @Test
     @DisplayName("Deve excluir uma pessoa do cadastro com sucesso")
-    public void excluePessoa(){
+    public void excluePessoa() {
+        // Simulação de uma pessoa encontrada no repositório
+        when(pessoaRepository.findById(novaPessoa.getId())).thenReturn(Optional.of(novaPessoa));
 
-        when(pessoaRepository.findById(novaPessoa.getId())).thenReturn(Optional.empty());
-
+        // Verificação de que a exclusão não lança exceção
         assertDoesNotThrow(() -> pessoaService.excluePessoa(novaPessoa.getId()));
 
+        // Verificação das interações com o repositório
         verify(pessoaRepository, times(1)).findById(novaPessoa.getId());
         verify(pessoaRepository, times(1)).delete(novaPessoa);
     }
 
+
     @Test
-    @DisplayName("Deve ocorre um erro havendo exceção")
+    @DisplayName("Não deve excluir pessoa com ID não identificado ")
     public void naoExcluePessoa(){
 
         when(pessoaRepository.findById(novaPessoa.getId())).thenReturn(Optional.empty());

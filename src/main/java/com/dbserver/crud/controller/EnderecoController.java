@@ -4,7 +4,6 @@ package com.dbserver.crud.controller;
 import com.dbserver.crud.entities.Endereco;
 import com.dbserver.crud.entities.Pessoa;
 import com.dbserver.crud.exceptions.EnderecoNaoEncontradoException;
-import com.dbserver.crud.exceptions.UsuarioNaoEncontradoException;
 import com.dbserver.crud.repositories.EnderecoRepository;
 import com.dbserver.crud.services.EnderecoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +36,17 @@ public class EnderecoController {
         Optional<Endereco> enderecoPorId = enderecoService.exibeEnderecoPorId(id);
         return enderecoPorId.map(endereco -> new ResponseEntity<>(endereco, HttpStatus.OK))
                 .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Endereco> modificaEndereco(@PathVariable Long id, @RequestBody Endereco endereco) throws EnderecoNaoEncontradoException {
+        endereco.setId(id);
+        Endereco enderecoModificado = enderecoService.modificaEndereco(endereco);
+        if (enderecoModificado != null) {
+            return new ResponseEntity<>(enderecoModificado, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @DeleteMapping("/{id}")

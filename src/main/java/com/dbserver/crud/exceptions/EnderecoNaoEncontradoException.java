@@ -1,7 +1,7 @@
 package com.dbserver.crud.exceptions;
 
-public class EnderecoNaoEncontradoException extends Throwable {
-    public EnderecoNaoEncontradoException(Long mensagem) {
-        super();
+public class EnderecoNaoEncontradoException extends Exception {
+    public EnderecoNaoEncontradoException(String mensagem) {
+        super(mensagem);
     }
 }

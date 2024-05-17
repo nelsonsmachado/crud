@@ -39,9 +39,12 @@ public class PessoaService {
             pessoaSalva.setNome(pessoa.getNome());
             pessoaSalva.setNascimento(pessoa.getNascimento());
             pessoaSalva.setCpf(pessoa.getCpf());
+            return pessoaRepository.save(pessoaSalva);
+        } else {
+            throw new UsuarioNaoEncontradoException(pessoa.getId());
         }
-            return pessoaRepository.save(pessoa);
-        }
+    }
+
 
     public void excluePessoa(Long id) {
         Pessoa pessoa = pessoaRepository.findById(id)

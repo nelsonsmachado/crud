@@ -27,16 +27,14 @@ public class Endereco {
 
     @JsonIgnore
     @ManyToOne
-    @JoinColumn(name = "pessoa_id")
+    @JoinColumn(name = "pessoa_id", nullable = false)
     private Pessoa pessoa;
 
-    public Endereco(){
-
+    public Endereco() {
     }
 
-    public Endereco ( String rua, int numero, String complemento, String bairro, String cidade, String estado,
-            String cep, Pessoa pessoa) {
-
+    public Endereco(String rua, int numero, String complemento, String bairro, String cidade, String estado,
+                    String cep, Pessoa pessoa) {
         this.rua = rua;
         this.numero = numero;
         this.complemento = complemento;
@@ -46,6 +44,8 @@ public class Endereco {
         this.cep = cep;
         this.pessoa = pessoa;
     }
+
+    // Getters and Setters
 
     public Long getId() {
         return id;
@@ -119,4 +119,20 @@ public class Endereco {
         this.pessoa = pessoa;
     }
 
+    @Override
+    public String toString() {
+        return "Endereco{" +
+                "id=" + id +
+                ", rua='" + rua + '\'' +
+                ", numero=" + numero +
+                ", complemento='" + complemento + '\'' +
+                ", bairro='" + bairro + '\'' +
+                ", cidade='" + cidade + '\'' +
+                ", estado='" + estado + '\'' +
+                ", cep='" + cep + '\'' +
+                ", pessoa=" + pessoa +
+                '}';
+    }
 }
+
+

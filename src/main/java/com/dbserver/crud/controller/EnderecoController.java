@@ -1,10 +1,10 @@
 package com.dbserver.crud.controller;
 
-
 import com.dbserver.crud.entities.Endereco;
 import com.dbserver.crud.entities.Pessoa;
+import com.dbserver.crud.exceptions.EnderecoExistenteException;
 import com.dbserver.crud.exceptions.EnderecoNaoEncontradoException;
-import com.dbserver.crud.repositories.EnderecoRepository;
+import com.dbserver.crud.exceptions.ResourceNotFoundException;
 import com.dbserver.crud.services.EnderecoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,12 +18,14 @@ import java.util.Optional;
 @RequestMapping("/enderecos")
 public class EnderecoController {
 
-
     @Autowired
-    EnderecoRepository enderecoRepository;
+    private EnderecoService enderecoService;
 
-    @Autowired
-    EnderecoService enderecoService;
+    @PostMapping("/insere/{pessoaId}")
+    public ResponseEntity<Pessoa> adicionaEndereco(@PathVariable Long pessoaId, @RequestBody Endereco novoEndereco) throws EnderecoExistenteException, ResourceNotFoundException {
+        Pessoa pessoa = enderecoService.adicionaEndereco(pessoaId, novoEndereco);
+        return new ResponseEntity<>(pessoa, HttpStatus.CREATED);
+    }
 
     @GetMapping("/todos")
     public ResponseEntity<List<Endereco>> exibeEnderecos() {
@@ -39,14 +41,9 @@ public class EnderecoController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Endereco> modificaEndereco(@PathVariable Long id, @RequestBody Endereco endereco) throws EnderecoNaoEncontradoException {
-        endereco.setId(id);
-        Endereco enderecoModificado = enderecoService.modificaEndereco(endereco);
-        if (enderecoModificado != null) {
-            return new ResponseEntity<>(enderecoModificado, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<Endereco> modificaEndereco(@PathVariable Long id, @RequestBody Endereco endereco) throws EnderecoNaoEncontradoException, ResourceNotFoundException {
+        Endereco enderecoModificado = enderecoService.modificaEndereco(id, endereco);
+        return new ResponseEntity<>(enderecoModificado, HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
@@ -59,3 +56,6 @@ public class EnderecoController {
         }
     }
 }
+
+
+

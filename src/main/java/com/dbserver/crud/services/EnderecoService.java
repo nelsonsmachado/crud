@@ -1,8 +1,12 @@
 package com.dbserver.crud.services;
 
 import com.dbserver.crud.entities.Endereco;
+import com.dbserver.crud.entities.Pessoa;
+import com.dbserver.crud.exceptions.EnderecoExistenteException;
 import com.dbserver.crud.exceptions.EnderecoNaoEncontradoException;
+import com.dbserver.crud.exceptions.ResourceNotFoundException;
 import com.dbserver.crud.repositories.EnderecoRepository;
+import com.dbserver.crud.repositories.PessoaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,38 +18,63 @@ import java.util.Optional;
 public class EnderecoService {
 
     @Autowired
-    EnderecoRepository enderecoRepository;
+    private EnderecoRepository enderecoRepository;
 
+    @Autowired
+    private PessoaRepository pessoaRepository;
+
+    public Pessoa adicionaEndereco(Long pessoaId, Endereco endereco) throws EnderecoExistenteException, ResourceNotFoundException {
+        if (enderecoRepository.existsByRuaAndNumeroAndComplementoAndBairroAndCidadeAndEstadoAndCep(
+                endereco.getRua(), endereco.getNumero(), endereco.getComplemento(), endereco.getBairro(),
+                endereco.getCidade(), endereco.getEstado(), endereco.getCep())) {
+            throw new EnderecoExistenteException("Endereço já existe.");
+        }
+
+        Pessoa pessoa = pessoaRepository.findById(pessoaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Pessoa não encontrada com o id: " + pessoaId));
+
+        endereco.setPessoa(pessoa);
+        enderecoRepository.save(endereco);
+
+        pessoa.getEnderecos().add(endereco);
+        return pessoaRepository.save(pessoa);
+    }
 
     public List<Endereco> exibeEnderecos() {
-        List<Endereco> enderecos = enderecoRepository.findAll();
-        return (enderecos);
+        return enderecoRepository.findAll();
     }
 
     public Optional<Endereco> exibeEnderecoPorId(Long id) {
         return enderecoRepository.findById(id);
     }
 
-    public Endereco modificaEndereco(Endereco endereco) throws EnderecoNaoEncontradoException {
-        Optional<Endereco> enderecoOptional = enderecoRepository.findById(endereco.getId());
-        if (enderecoOptional.isPresent()) {
-            Endereco enderecoSalvo = enderecoOptional.get();
-            enderecoSalvo.setRua(endereco.getRua());
-            enderecoSalvo.setNumero(endereco.getNumero());
-            enderecoSalvo.setComplemento(endereco.getComplemento());
-            enderecoSalvo.setBairro(endereco.getBairro());
-            enderecoSalvo.setCidade(endereco.getCidade());
-            enderecoSalvo.setEstado(endereco.getEstado());
-            enderecoSalvo.setCep(endereco.getCep());
-            return enderecoRepository.save(enderecoSalvo);
-        } else {
-            throw new EnderecoNaoEncontradoException("Endereço não encontrado pelo ID informado.");
+    public Endereco modificaEndereco(Long id, Endereco enderecoAtualizado) throws ResourceNotFoundException {
+        Endereco enderecoExistente = enderecoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Endereço não encontrado com id: " + id));
+
+        enderecoExistente.setRua(enderecoAtualizado.getRua());
+        enderecoExistente.setNumero(enderecoAtualizado.getNumero());
+        enderecoExistente.setComplemento(enderecoAtualizado.getComplemento());
+        enderecoExistente.setBairro(enderecoAtualizado.getBairro());
+        enderecoExistente.setCidade(enderecoAtualizado.getCidade());
+        enderecoExistente.setEstado(enderecoAtualizado.getEstado());
+        enderecoExistente.setCep(enderecoAtualizado.getCep());
+
+        if (enderecoAtualizado.getPessoa() != null) {
+            Pessoa pessoa = pessoaRepository.findById(enderecoAtualizado.getPessoa().getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Pessoa não encontrada com id: " + enderecoAtualizado.getPessoa().getId()));
+            enderecoExistente.setPessoa(pessoa);
         }
+
+        return enderecoRepository.save(enderecoExistente);
     }
 
     public void exclueEndereco(Long id) throws EnderecoNaoEncontradoException {
-        Endereco endereco = enderecoRepository.findById(id)
-                .orElseThrow(() -> new EnderecoNaoEncontradoException("Endereço não encontrado com o ID: " + id.toString()));
-        enderecoRepository.delete(endereco);
+        if (!enderecoRepository.existsById(id)) {
+            throw new EnderecoNaoEncontradoException(id);
+        }
+        enderecoRepository.deleteById(id);
     }
 }
+
+

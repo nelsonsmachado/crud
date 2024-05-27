@@ -48,19 +48,15 @@ public class PessoaController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Pessoa> modificaPessoa(@PathVariable Long id, @RequestBody Pessoa pessoa) {
+    public ResponseEntity<Pessoa> modificaPessoa(@PathVariable Long id, @RequestBody Pessoa pessoa) throws UsuarioNaoEncontradoException {
         pessoa.setId(id);
         Pessoa pessoaModificada = pessoaService.modificaPessoa(pessoa);
         return new ResponseEntity<>(pessoaModificada, HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> excluePessoa(@PathVariable Long id) {
-        try {
-            pessoaService.excluePessoa(id);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } catch (UsuarioNaoEncontradoException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<Void> excluePessoa(@PathVariable Long id) throws UsuarioNaoEncontradoException {
+        pessoaService.excluePessoa(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

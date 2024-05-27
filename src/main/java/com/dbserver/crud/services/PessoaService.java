@@ -32,7 +32,7 @@ public class PessoaService {
         return pessoaRepository.findById(id);
     }
 
-    public Pessoa modificaPessoa(Pessoa pessoa) {
+    public Pessoa modificaPessoa(Pessoa pessoa) throws UsuarioNaoEncontradoException {
         Optional<Pessoa> pessoaOptional = pessoaRepository.findById(pessoa.getId());
         if (pessoaOptional.isPresent()) {
             Pessoa pessoaSalva = pessoaOptional.get();
@@ -46,7 +46,7 @@ public class PessoaService {
     }
 
 
-    public void excluePessoa(Long id) {
+    public void excluePessoa(Long id) throws UsuarioNaoEncontradoException {
         Pessoa pessoa = pessoaRepository.findById(id)
                 .orElseThrow(() -> new UsuarioNaoEncontradoException(id));
         pessoaRepository.delete(pessoa);

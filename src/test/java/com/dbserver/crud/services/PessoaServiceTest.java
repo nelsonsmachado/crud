@@ -103,7 +103,7 @@ public class PessoaServiceTest {
 
     @Test
     @DisplayName("Deve modificar as informações de pessoa no cadastro com sucesso")
-    public void modificaPessoa() {
+    public void modificaPessoa() throws UsuarioNaoEncontradoException {
         Pessoa pessoaModificada = new Pessoa("Ana Raquel", "555.666.777-88", nascimento);
         pessoaModificada.setId(novaPessoa.getId()); // Certifique-se de que a ID seja a mesma
 

@@ -2,7 +2,6 @@ package com.dbserver.crud.services;
 
 import com.dbserver.crud.entities.Endereco;
 import com.dbserver.crud.entities.Pessoa;
-import com.dbserver.crud.exceptions.EnderecoExistenteException;
 import com.dbserver.crud.exceptions.EnderecoNaoEncontradoException;
 import com.dbserver.crud.exceptions.ResourceNotFoundException;
 import com.dbserver.crud.repositories.EnderecoRepository;
@@ -23,15 +22,10 @@ public class EnderecoService {
     @Autowired
     private PessoaRepository pessoaRepository;
 
-    public Pessoa adicionaEndereco(Long pessoaId, Endereco endereco) throws EnderecoExistenteException, ResourceNotFoundException {
-        if (enderecoRepository.existsByRuaAndNumeroAndComplementoAndBairroAndCidadeAndEstadoAndCep(
-                endereco.getRua(), endereco.getNumero(), endereco.getComplemento(), endereco.getBairro(),
-                endereco.getCidade(), endereco.getEstado(), endereco.getCep())) {
-            throw new EnderecoExistenteException("Endereço já existe.");
-        }
+    public Pessoa adicionaEndereco(Long id, Endereco endereco) throws ResourceNotFoundException {
 
-        Pessoa pessoa = pessoaRepository.findById(pessoaId)
-                .orElseThrow(() -> new ResourceNotFoundException("Pessoa não encontrada com o id: " + pessoaId));
+        Pessoa pessoa = pessoaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Pessoa não encontrada com o id: " + id));
 
         endereco.setPessoa(pessoa);
         enderecoRepository.save(endereco);
@@ -69,7 +63,7 @@ public class EnderecoService {
         return enderecoRepository.save(enderecoExistente);
     }
 
-    public void exclueEndereco(Long id) throws EnderecoNaoEncontradoException {
+    public void exclueEndereco(Long id) throws ResourceNotFoundException {
         if (!enderecoRepository.existsById(id)) {
             throw new EnderecoNaoEncontradoException(id);
         }
